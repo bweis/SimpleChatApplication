@@ -12,8 +12,9 @@ public class ChatClient {
     private ObjectOutputStream sOutput;
     private Socket socket;
 
-    private String server, username;
-    private int port;
+    private final String server;
+    private final String username;
+    private final int port;
 
     private ChatClient(String server, int port, String username) {
         this.server = server;
@@ -163,5 +164,3 @@ public class ChatClient {
         }
     }
 }
-
-// Test

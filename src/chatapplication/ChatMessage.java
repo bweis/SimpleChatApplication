@@ -5,15 +5,17 @@ import java.io.Serializable;
 final class ChatMessage implements Serializable {
     private static final long serialVersionUID = 6898543889087L;
 
-    static final int MESSAGE = 0, LOGOUT = 1;
-    private int type;
-    private String message;
+    protected static final int MESSAGE = 0, LOGOUT = 1;
+    private final int type;
+    private final String message;
 
     ChatMessage(int type, String message) {
-        this.message = message;
-        if (this.message == null) {
+        if (message == null) {
             this.message = "";
+        } else {
+            this.message = message;
         }
+
         this.type = type;
     }
 
@@ -25,4 +27,3 @@ final class ChatMessage implements Serializable {
         return message;
     }
 }
-// Test

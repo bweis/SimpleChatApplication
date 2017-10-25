@@ -9,13 +9,12 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 final class ChatServer {
-    private static AtomicInteger uniqueId = new AtomicInteger(0);
-    private List<ClientThread> clients = new ArrayList<>();
-    private SimpleDateFormat sdf;
-    private int port;
+    private static int uniqueId = 0;
+    private final List<ClientThread> clients = new ArrayList<>();
+    private final SimpleDateFormat sdf;
+    private final int port;
 
     private ChatServer(int port) {
         this.port = port;
@@ -30,7 +29,7 @@ final class ChatServer {
             while (true) {
                 display("Server waiting for Clients on port " + port + ".");
                 Socket socket = serverSocket.accept();
-                Runnable r = new ClientThread(socket, uniqueId.getAndIncrement());
+                Runnable r = new ClientThread(socket, uniqueId++);
                 Thread t = new Thread(r);
                 clients.add((ClientThread) r);
                 t.start();
