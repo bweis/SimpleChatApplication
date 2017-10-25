@@ -6,7 +6,7 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.Scanner;
 
-public class ChatClient {
+final class ChatClient {
 
     private ObjectInputStream sInput;
     private ObjectOutputStream sOutput;
