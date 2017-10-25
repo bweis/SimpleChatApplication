@@ -1,3 +1,5 @@
+package chatapplication;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -6,17 +8,18 @@ import java.net.Socket;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
-public class ChatServer {
-    private static int uniqueId;
-    private ArrayList<ClientThread> clients = new ArrayList<>();
-    private SimpleDateFormat sdf;
-    private int port;
-
+final class ChatServer {
+    private static int uniqueId = 0;
+    private final List<ClientThread> clients = new ArrayList<>();
+    private final SimpleDateFormat sdf;
+    private final int port;
 
     private ChatServer(int port) {
         this.port = port;
         sdf = new SimpleDateFormat("HH:mm:ss");
+
     }
 
     private void start() {
@@ -26,7 +29,7 @@ public class ChatServer {
             while (true) {
                 display("Server waiting for Clients on port " + port + ".");
                 Socket socket = serverSocket.accept();
-                Runnable r = new ClientThread(socket);
+                Runnable r = new ClientThread(socket, uniqueId++);
                 Thread t = new Thread(r);
                 clients.add((ClientThread) r);
                 t.start();
@@ -56,14 +59,19 @@ public class ChatServer {
     }
 
     private synchronized void remove(int id) {
-        for(int i = 0; i < clients.size(); ++i) {
-            if(clients.get(i).id == id) {
+        for (int i = 0; i < clients.size(); ++i) {
+            if (clients.get(i).id == id) {
                 clients.remove(i);
                 return;
             }
         }
     }
 
+    /*
+     *  > java ChatServer
+     *  > java ChatServer portNumber
+     *  If the port number is not specified 1500 is used
+     */
     public static void main(String[] args) {
         int portNumber = 1500;
         switch (args.length) {
@@ -87,7 +95,7 @@ public class ChatServer {
         server.start();
     }
 
-    class ClientThread implements Runnable {
+    private final class ClientThread implements Runnable {
         Socket socket;
         ObjectInputStream sInput;
         ObjectOutputStream sOutput;
@@ -96,8 +104,8 @@ public class ChatServer {
         ChatMessage cm;
         String date;
 
-        ClientThread(Socket socket) {
-            id = ++uniqueId;
+        private ClientThread(Socket socket, int id) {
+            this.id = id;
             this.socket = socket;
             try {
                 sOutput = new ObjectOutputStream(socket.getOutputStream());
@@ -106,12 +114,16 @@ public class ChatServer {
                 display(username + " just connected.");
             } catch (IOException e) {
                 display("Exception creating new Input/output Streams: " + e);
+                close();
                 return;
-            } catch (ClassNotFoundException ignored) {
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+                return;
             }
             date = new Date().toString() + "\n";
         }
 
+        @Override
         public void run() {
             boolean isRunning = true;
             while (isRunning) {
@@ -141,16 +153,25 @@ public class ChatServer {
 
         private void close() {
             try {
-                if (sOutput != null) sOutput.close();
-            } catch (IOException ignored) {
+                if (sOutput != null) {
+                    sOutput.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
             try {
-                if (sInput != null) sInput.close();
-            } catch (Exception ignored) {
+                if (sInput != null) {
+                    sInput.close();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
             try {
-                if (socket != null) socket.close();
-            } catch (Exception ignored) {
+                if (socket != null) {
+                    socket.close();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
 
@@ -169,4 +190,3 @@ public class ChatServer {
         }
     }
 }
-

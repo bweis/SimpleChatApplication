@@ -1,17 +1,20 @@
+package chatapplication;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.Scanner;
 
-public class ChatClient {
+final class ChatClient {
 
     private ObjectInputStream sInput;
     private ObjectOutputStream sOutput;
     private Socket socket;
 
-    private String server, username;
-    private int port;
+    private final String server;
+    private final String username;
+    private final int port;
 
     private ChatClient(String server, int port, String username) {
         this.server = server;
@@ -22,7 +25,7 @@ public class ChatClient {
     private boolean start() {
         try {
             socket = new Socket(server, port);
-        } catch (Exception e) {
+        } catch (IOException e) {
             display("Exception connecting to socket: " + e);
             return false;
         }
@@ -33,8 +36,8 @@ public class ChatClient {
         try {
             sInput = new ObjectInputStream(socket.getInputStream());
             sOutput = new ObjectOutputStream(socket.getOutputStream());
-        } catch (IOException eIO) {
-            display("Exception creating new Input/output Streams: " + eIO);
+        } catch (IOException e) {
+            display("Exception creating new Input/output Streams: " + e);
             return false;
         }
 
@@ -44,8 +47,8 @@ public class ChatClient {
 
         try {
             sOutput.writeObject(username);
-        } catch (IOException eIO) {
-            display("Exception doing login : " + eIO);
+        } catch (IOException e) {
+            display("Exception doing login : " + e);
             disconnect();
             return false;
         }
@@ -66,19 +69,40 @@ public class ChatClient {
 
     private void disconnect() {
         try {
-            if (sInput != null) sInput.close();
-        } catch (Exception ignored) {
+            if (sInput != null) {
+                sInput.close();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         try {
-            if (sOutput != null) sOutput.close();
-        } catch (Exception ignored) {
+            if (sOutput != null) {
+                sOutput.close();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         try {
-            if (socket != null) socket.close();
-        } catch (Exception ignored) {
+            if (socket != null) {
+                socket.close();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
+    /*
+     ** To start the Client in console mode use one of the following command
+     ** > java ChatClient
+     ** > java ChatClient username
+     ** > java ChatClient username portNumber
+     ** > java ChatClient username portNumber serverAddress
+     **
+     ** If the portNumber is not specified 1500 is used
+     ** If the serverAddress is not specified "localHost" is used
+     ** If the username is not specified "Anonymous" is used
+     *
+     */
     public static void main(String[] args) {
         int portNumber = 1500;
         String serverAddress = "localhost";
@@ -104,8 +128,10 @@ public class ChatClient {
                 return;
         }
         ChatClient client = new ChatClient(serverAddress, portNumber, userName);
-        if (!client.start())
+        if (!client.start()) {
+            System.out.println("Client could not be started.");
             return;
+        }
 
         Scanner scan = new Scanner(System.in);
         while (true) {
@@ -121,7 +147,7 @@ public class ChatClient {
         client.disconnect();
     }
 
-    class ListenFromServer implements Runnable {
+    private final class ListenFromServer implements Runnable {
         public void run() {
             while (true) {
                 try {
@@ -131,8 +157,9 @@ public class ChatClient {
                 } catch (IOException e) {
                     display("Server has closed the connection");
                     break;
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
                 }
-                catch (ClassNotFoundException ignored) { }
             }
         }
     }
