@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-final class ChatServer {
+public final class ChatServer {
     private static int uniqueId = 0;
     private final List<ClientThread> clients = new ArrayList<>();
     private final SimpleDateFormat sdf;
@@ -96,17 +96,18 @@ final class ChatServer {
     }
 
     private final class ClientThread implements Runnable {
-        Socket socket;
+        final Socket socket;
+        final int id;
+        final String date;
         ObjectInputStream sInput;
         ObjectOutputStream sOutput;
-        int id;
         String username;
         ChatMessage cm;
-        String date;
 
         private ClientThread(Socket socket, int id) {
             this.id = id;
             this.socket = socket;
+            date = new Date().toString() + "\n";
             try {
                 sOutput = new ObjectOutputStream(socket.getOutputStream());
                 sInput = new ObjectInputStream(socket.getInputStream());
@@ -115,12 +116,9 @@ final class ChatServer {
             } catch (IOException e) {
                 display("Exception creating new Input/output Streams: " + e);
                 close();
-                return;
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
-                return;
             }
-            date = new Date().toString() + "\n";
         }
 
         @Override
