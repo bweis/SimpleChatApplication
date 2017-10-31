@@ -7,7 +7,6 @@ import java.net.Socket;
 import java.util.Scanner;
 
 final class ChatClient {
-
     private ObjectInputStream sInput;
     private ObjectOutputStream sOutput;
     private Socket socket;
@@ -34,16 +33,11 @@ final class ChatClient {
         display(msg);
 
         try {
-            sInput = new ObjectInputStream(socket.getInputStream());
             sOutput = new ObjectOutputStream(socket.getOutputStream());
         } catch (IOException e) {
             display("Exception creating new Input/output Streams: " + e);
             return false;
         }
-
-        Runnable r = new ListenFromServer();
-        Thread t = new Thread(r);
-        t.start();
 
         try {
             sOutput.writeObject(username);
@@ -52,6 +46,17 @@ final class ChatClient {
             disconnect();
             return false;
         }
+        try {
+            sInput = new ObjectInputStream(socket.getInputStream());
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        Runnable r = new ListenFromServer();
+        Thread t = new Thread(r);
+        t.start();
+
         return true;
     }
 
@@ -137,11 +142,15 @@ final class ChatClient {
         while (true) {
             System.out.print("> ");
             String msg = scan.nextLine();
-            if (msg.equalsIgnoreCase("LOGOUT")) {
-                client.sendMessage(new ChatMessage(ChatMessage.LOGOUT, ""));
+            if (msg.equalsIgnoreCase("/logout")) {
+                client.sendMessage(new ChatMessage(ChatMessage.LOGOUT, "", ""));
                 break;
+            } else if (msg.startsWith("/msg ")) {
+                String recipient = msg.split(" ")[1];
+                String newMessage = msg.substring(5 + recipient.length() + 1);
+                client.sendMessage(new ChatMessage(ChatMessage.DM, newMessage, recipient));
             } else {
-                client.sendMessage(new ChatMessage(ChatMessage.MESSAGE, msg));
+                client.sendMessage(new ChatMessage(ChatMessage.MESSAGE, msg, ""));
             }
         }
         client.disconnect();
