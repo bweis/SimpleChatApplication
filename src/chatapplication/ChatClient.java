@@ -149,6 +149,9 @@ final class ChatClient {
                 String recipient = msg.split(" ")[1];
                 String newMessage = msg.substring(5 + recipient.length() + 1);
                 client.sendMessage(new ChatMessage(ChatMessage.DM, newMessage, recipient));
+            } else if (msg.startsWith("/list")) {
+                String users = "Hello";
+                client.sendMessage((new ChatMessage(ChatMessage.LIST, users, "")));
             } else {
                 client.sendMessage(new ChatMessage(ChatMessage.MESSAGE, msg, ""));
             }
